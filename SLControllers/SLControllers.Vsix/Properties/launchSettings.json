@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SLControllers.Vsix": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
