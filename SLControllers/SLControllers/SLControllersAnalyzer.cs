@@ -39,55 +39,42 @@ namespace SLControllers
             context.RegisterSyntaxNodeAction(AnalyzeNode, SyntaxKind.ObjectCreationExpression);
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context)
-        {
-            Debug.WriteLine("MAIK HERE");
-            // TODO: Replace the following code with your own analysis, generating Diagnostic objects for any issues you find
-            //var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
+        //private static void AnalyzeSymbol(SymbolAnalysisContext context)
+        //{
+        //    var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
 
-            //// Find just those named type symbols with names containing lowercase letters.
-            //if (namedTypeSymbol.Name.ToCharArray().Any(char.IsLower))
-            //{
-            //    // For all such symbols, produce a diagnostic.
-            //    var diagnostic = Diagnostic.Create(Rule, namedTypeSymbol.Locations[0], namedTypeSymbol.Name);
+        //    // Check if the class is derived from class B
+        //    if (namedTypeSymbol.BaseType != null && namedTypeSymbol.BaseType.Name == "BaseClass")
+        //    {
+        //        foreach (var member in namedTypeSymbol.GetMembers())
+        //        {
+        //            if (member is IPropertySymbol || member is IMethodSymbol)
+        //            {
+        //                var references = member.DeclaringSyntaxReferences;
 
-            //    context.ReportDiagnostic(diagnostic);
-            //}
+        //                foreach (var reference in references)
+        //                {
+        //                    var syntaxNode = reference.GetSyntax();
+        //                    var containingClass = syntaxNode.FirstAncestorOrSelf<ClassDeclarationSyntax>();
 
-            var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
+        //                    // Check if the member is using a class derived from class A
+        //                    if (containingClass != null && containingClass.Identifier.ValueText != namedTypeSymbol.Name)
+        //                    {
+        //                        var semanticModel = context.Compilation.GetSemanticModel(syntaxNode.SyntaxTree);
+        //                        var symbolInfo = semanticModel.GetSymbolInfo(syntaxNode);
 
-            // Check if the class is derived from class B
-            if (namedTypeSymbol.BaseType != null && namedTypeSymbol.BaseType.Name == "SLControllerBase")
-            {
-                foreach (var member in namedTypeSymbol.GetMembers())
-                {
-                    if (member is IPropertySymbol || member is IMethodSymbol)
-                    {
-                        var references = member.DeclaringSyntaxReferences;
-
-                        foreach (var reference in references)
-                        {
-                            var syntaxNode = reference.GetSyntax();
-                            var containingClass = syntaxNode.FirstAncestorOrSelf<ClassDeclarationSyntax>();
-
-                            // Check if the member is using a class derived from class A
-                            if (containingClass != null && containingClass.Identifier.ValueText != namedTypeSymbol.Name)
-                            {
-                                var semanticModel = context.Compilation.GetSemanticModel(syntaxNode.SyntaxTree);
-                                var symbolInfo = semanticModel.GetSymbolInfo(syntaxNode);
-
-                                if (symbolInfo.Symbol != null && symbolInfo.Symbol.ContainingType != null && symbolInfo.Symbol.ContainingType.BaseType != null &&
-                                    symbolInfo.Symbol.ContainingType.BaseType.Name == "ControllerBase")
-                                {
-                                    var diagnostic = Diagnostic.Create(Rule, syntaxNode.GetLocation());
-                                    context.ReportDiagnostic(diagnostic);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        //                        if (symbolInfo.Symbol != null && symbolInfo.Symbol.ContainingType != null && symbolInfo.Symbol.ContainingType.BaseType != null &&
+        //                            symbolInfo.Symbol.ContainingType.BaseType.Name == "InheritedClass")
+        //                        {
+        //                            var diagnostic = Diagnostic.Create(Rule, syntaxNode.GetLocation());
+        //                            context.ReportDiagnostic(diagnostic);
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
         private static void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
@@ -97,7 +84,7 @@ namespace SLControllers
             if (symbolInfo.Symbol is INamedTypeSymbol namedTypeSymbol)
             {
                 // Check if the class is derived from class A
-                if (namedTypeSymbol.BaseType != null && namedTypeSymbol.BaseType.Name == "ControllerBase")
+                if (namedTypeSymbol.BaseType != null && namedTypeSymbol.BaseType.Name == "InheritedClass")
                 {
                     var containingClass = objectCreation.FirstAncestorOrSelf<ClassDeclarationSyntax>();
 
@@ -107,7 +94,7 @@ namespace SLControllers
                         foreach (var baseType in containingClass.BaseList.Types)
                         {
                             var baseTypeName = baseType.Type.ToString();
-                            if (baseTypeName == "SLControllerBase" || baseType.Type is IdentifierNameSyntax identifier && identifier.Identifier.Text == "SLControllerBase")
+                            if (baseTypeName == "BaseClass" || baseType.Type is IdentifierNameSyntax identifier && identifier.Identifier.Text == "BaseClass")
                             {
                                 var diagnostic = Diagnostic.Create(Rule, objectCreation.GetLocation());
                                 context.ReportDiagnostic(diagnostic);
